@@ -1,10 +1,54 @@
+package jdbc;
 
-
-
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 class Model {
+    // criei 4 funções "parecidas" para registar cada utente (pessoa,condutor,proprietario e cliente)
 
-    static void registerProprietario(proprietario prop){
+    // PESSOA(id,Noident,NIF,nproprio,apelido,morada,CodPostal,localidade,atrdisc)
+
+    // CONDUTOR(idPessoa,ncconducao,dtnascimento)
+
+    // PROPRIETARIO(idPessoa,dtnascimento)
+
+    // CLIENTE é a mesma coisa que PESSOA pois não tem atributos adicionais.
+
+    static void registerPessoa(Pessoa pessoa){
+
+        final String INSERT_CMD = 
+                "INSERT INTO pessoa values(?,?,?,?,?,?,?,?,?)";
+
+        try (
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt = con.prepareStatement(INSERT_CMD);
+        ) {
+            
+            con.setAutoCommit(false);
+            pstmt.setInt(1,pessoa.getId());
+            pstmt.setString(2,pessoa.getNoident());
+            pstmt.setString(3,pessoa.getNif());
+            pstmt.setString(4,pessoa.getNproprio());
+            pstmt.setString(5,pessoa.getApelido());
+            pstmt.setString(6,pessoa.getMorada());
+            pstmt.setInt(7,pessoa.getCodpostal());
+            pstmt.setString(8,pessoa.getLocalidade());
+            pstmt.setString(9,pessoa.getAtrdisc());
+
+            pstmt.executeUpdate();
+            con.commit();
+            con.setAutoCommit(true);
+            System.out.println("Pessoa registered!!!");
+        }catch (SQLException e){
+            e.getMessage();
+            System.out.println("Error on insert values");
+        }
+
+
+    }
+
+    /*static void registerProprietario(Proprietario prop){
         
         final String INSERT_CMD = 
                 "INSERT INTO proprietario values(?,?) ";
@@ -27,9 +71,9 @@ class Model {
             e.getMessage();
             System.out.println("Error on insert values");
         }
-    }
+    }*/
 
-    static void registerCondutor(condutor cond){
+    /*static void registerCondutor(Condutor cond){
         //note : only registes, doesn't verify a thing!
         final String INSERT_CMD = 
                 "INSERT INTO condutor values(?,?,?) "; // (idPessoa,ncconducao,dtnascimento)
@@ -53,11 +97,11 @@ class Model {
             e.getMessage();
             System.out.println("Error on insert values");
         }
-    }
+    }*/
 
     static String inputData(String str){
         java.util.Scanner key = new Scanner(System.in);
-        System.out.print("Enter corresponding values, separated by commas, \n" + str); 
+        System.out.println("Enter corresponding values, separated by commas, \n" + str); 
         String values = key.nextLine(); 
         return values;
     }

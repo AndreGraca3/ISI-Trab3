@@ -1,4 +1,6 @@
-class pessoa{
+package jdbc;
+
+class Pessoa{
     private int id;
     private String noident;
     private String nif;
@@ -9,7 +11,7 @@ class pessoa{
     private String localidade;
     private String atrdisc;
 
-    pessoa(String values){
+    Pessoa(String values){
         String[] attributos = values.split(","); // (1,23,54,Diogo,Santos,Rua roxa,2635,Sintra,C)
         id = Integer.parseInt(attributos[0]);
         noident = attributos[1];
