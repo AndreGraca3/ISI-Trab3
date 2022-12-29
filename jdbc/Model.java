@@ -132,10 +132,10 @@ class Model {
         return false;
     }
 
-    static void validPessoa(String atrdisc) {
+    static void validPessoa(String table,String atrdisc) {
 
         final String SELECT_CMD = String.format(
-        "(SELECT id,nproprio,apelido FROM pessoa WHERE atrdisc = ?) except (SELECT id,nproprio,apelido FROM pessoa p INNER JOIN condutor c on c.idpessoa = p.id)");
+        "(SELECT id,nproprio,apelido FROM pessoa WHERE atrdisc = ?) except (SELECT id,nproprio,apelido FROM pessoa p INNER JOIN %s on idpessoa = p.id)",table);
         
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
@@ -163,7 +163,7 @@ class Model {
             }
             System.out.println("--------------------------------------------------------------------------------");
             
-            con.commit(); //when several calls
+            con.commit();
             con.setAutoCommit(true);
             
         } catch (SQLException e) {

@@ -14,7 +14,8 @@ class App{
         Unknown, // 0
         Exit, // 1
         registerPessoa, // 2
-        registerCondutor // 3
+        registerCondutor, // 3
+        registerProprietario // 4
     }
 
     private static App __instance = null;
@@ -26,6 +27,7 @@ class App{
         __dbMethods = new HashMap<Option,DbWorker>();
         __dbMethods.put(Option.registerPessoa, new DbWorker() {public void doWork() {App.this.registerPessoa();}});
         __dbMethods.put(Option.registerCondutor, new DbWorker() {public void doWork() {App.this.registerCondutor();}});
+        __dbMethods.put(Option.registerProprietario, new DbWorker() {public void doWork() {App.this.registerProprietario();}});
     }
 
     public static App getInstance()
@@ -114,13 +116,24 @@ class App{
     }
 
     private void registerCondutor() {// mostrar todas as pessoas que são condutores.(mesma coisa que proprietario)
-        Model.validPessoa("C"); // displays valid pessoas to add to condutor.
+        Model.validPessoa("condutor","C"); // displays valid pessoas to add to condutor.
 
         String values = Model.inputData("CONDUTOR(idPessoa,nccondução,dtnascimento)");
         System.out.println(values); // debug purposes.
 
         Condutor condutor = new Condutor(values);
         Model.registerCondutor(condutor);
+    }
+
+    private void registerProprietario() {
+        Model.validPessoa("proprietario","P");
+
+        String values = Model.input("PROPRIETARIO(idPessoa,dtnascimento)");
+        System.out.println(values);
+
+        Proprietario proprietario = new Proprietario(values);
+        Model.registerProprietario(proprietario);
+
     }
 }
 
