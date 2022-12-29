@@ -73,10 +73,10 @@ class Model {
         }
     }*/
 
-    /*static void registerCondutor(Condutor cond){
-        //note : only registes, doesn't verify a thing!
+    static void registerCondutor(Condutor cond){
+
         final String INSERT_CMD = 
-                "INSERT INTO condutor values(?,?,?) "; // (idPessoa,ncconducao,dtnascimento)
+                "INSERT INTO condutor values(?,?,?)"; // (idPessoa,ncconducao,dtnascimento)
 
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
@@ -84,9 +84,9 @@ class Model {
         ) {
 
             con.setAutoCommit(false);
-            pstmt.setInt(1,cond.getIdpessoa());
-            pstmt.setString(2,cond.getNcconducao());
-            pstmt.setString(3,cond.getDtnascimento());
+            pstmt.setInt(1,cond.getIdPessoa());
+            pstmt.setString(2,cond.getNConducao());
+            pstmt.setObject(3,cond.getDtNascimento());
             
             pstmt.executeUpdate();
             con.commit();
@@ -97,7 +97,7 @@ class Model {
             e.getMessage();
             System.out.println("Error on insert values");
         }
-    }*/
+    }
 
     static String inputData(String str){
         java.util.Scanner key = new Scanner(System.in);
@@ -130,5 +130,45 @@ class Model {
             if(p == id_cond) return true;
         }
         return false;
+    }
+
+    static void validPessoa(String atrdisc) {
+
+        final String SELECT_CMD = String.format(
+        "(SELECT id,nproprio,apelido FROM pessoa WHERE atrdisc = ?) except (SELECT id,nproprio,apelido FROM pessoa p INNER JOIN condutor c on c.idpessoa = p.id)");
+        
+        try (
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt = con.prepareStatement(SELECT_CMD);
+        ) {
+            
+            con.setAutoCommit(false);
+            pstmt.setString(1,atrdisc);
+            ResultSet res = pstmt.executeQuery();
+            System.out.print("id   ");
+            System.out.print("nproprio  ");
+            System.out.println("apelido        ");
+            while(res.next()){
+                System.out.print(res.getInt("id"));
+                int id_length = (Integer.toString(res.getInt("id"))).length();
+                for(int steps = id_length ; steps < 5 ; steps++){
+                    System.out.print(" ");
+                }
+                System.out.print(res.getString("nproprio"));
+                int nproprio_length = (res.getString("nproprio")).length();
+                for(int steps = nproprio_length; steps < 10 ; steps++){
+                    System.out.print(" ");
+                }
+                System.out.println(res.getString("apelido"));
+            }
+            System.out.println("--------------------------------------------------------------------------------");
+            
+            con.commit(); //when several calls
+            con.setAutoCommit(true);
+            
+        } catch (SQLException e) {
+            e.getMessage();
+            System.out.println("Error!!!");
+        }
     }
 }

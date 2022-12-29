@@ -1,10 +1,12 @@
+package jdbc;
+import java.time.LocalDate;
 
-class condutor {
+class Condutor {
     private int idpessoa;
     private String nconducao;
     private LocalDate dtnascimento;
 
-    condutor(String values){
+    Condutor(String values){
         String[] attributos = values.split(","); // ()
         idpessoa = Integer.parseInt(attributos[0]);
         nconducao = attributos[1];

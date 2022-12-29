@@ -13,7 +13,8 @@ class App{
     private enum Option {
         Unknown, // 0
         Exit, // 1
-        registerPessoa // 2
+        registerPessoa, // 2
+        registerCondutor // 3
     }
 
     private static App __instance = null;
@@ -24,6 +25,7 @@ class App{
     private App() {
         __dbMethods = new HashMap<Option,DbWorker>();
         __dbMethods.put(Option.registerPessoa, new DbWorker() {public void doWork() {App.this.registerPessoa();}});
+        __dbMethods.put(Option.registerCondutor, new DbWorker() {public void doWork() {App.this.registerCondutor();}});
     }
 
     public static App getInstance()
@@ -44,6 +46,7 @@ class App{
             System.out.println();
             System.out.println("1. Exit");
             System.out.println("2. Register Pessoa");
+            System.out.println("3. Register Condutor");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -110,6 +113,15 @@ class App{
         Model.registerPessoa(pessoa);
     }
 
+    private void registerCondutor() {// mostrar todas as pessoas que são condutores.(mesma coisa que proprietario)
+        Model.validPessoa("C"); // displays valid pessoas to add to condutor.
+
+        String values = Model.inputData("CONDUTOR(idPessoa,nccondução,dtnascimento)");
+        System.out.println(values); // debug purposes.
+
+        Condutor condutor = new Condutor(values);
+        Model.registerCondutor(condutor);
+    }
 }
 
 public class Ap23{
