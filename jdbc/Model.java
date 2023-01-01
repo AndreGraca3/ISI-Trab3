@@ -3,6 +3,7 @@ package jdbc;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.sql.SQLException;
 
 class Model {
     // criei 4 funções "parecidas" para registar cada utente (pessoa,condutor,proprietario e cliente)
@@ -48,54 +49,111 @@ class Model {
 
     }
 
-    /*static void registerProprietario(Proprietario prop){
+    static void registerProprietario(Proprietario prop){
+
+        final String SELECT_CMD = 
+                "SELECT * FROM condutor where idpessoa = ?";
         
         final String INSERT_CMD = 
                 "INSERT INTO proprietario values(?,?) ";
 
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
-            PreparedStatement pstmt = con.prepareStatement(INSERT_CMD);
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+            PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
         ) {
             
             con.setAutoCommit(false);
-            pstmt.setInt(1,prop.getIdpessoa());
-            pstmt.setString(2,cond.getDtnascimento());
 
-            pstmt.executeUpdate();
+            pstmt1.setInt(1,prop.getIdPessoa());
+            ResultSet rs = pstmt1.executeQuery();
+            if(rs.getInt("idpessoa") == prop.getIdPessoa()) throw new SQLException("I am already a proprietario!");
+
+
+            pstmt2.setInt(1,prop.getIdPessoa());
+            pstmt2.setObject(2,prop.getDtNascimento());
+
+            pstmt2.executeUpdate();
             con.commit();
             con.setAutoCommit(true);
             System.out.println("Proprietario registered!!!");
 
         }catch (SQLException e){
-            e.getMessage();
-            System.out.println("Error on insert values");
+            System.out.println(e.getMessage());
+            //System.out.println("Error on insert values");
         }
-    }*/
+    }
 
     static void registerCondutor(Condutor cond){
+
+        final String SELECT_CMD =
+            "SELECT * FROM proprietario where idpessoa = ?"; 
 
         final String INSERT_CMD = 
                 "INSERT INTO condutor values(?,?,?)"; // (idPessoa,ncconducao,dtnascimento)
 
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
-            PreparedStatement pstmt = con.prepareStatement(INSERT_CMD);
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+            PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
         ) {
 
             con.setAutoCommit(false);
-            pstmt.setInt(1,cond.getIdPessoa());
-            pstmt.setString(2,cond.getNConducao());
-            pstmt.setObject(3,cond.getDtNascimento());
+
+            pstmt1.setInt(1,cond.getIdPessoa());
+            ResultSet rs = pstmt1.executeQuery();
+            if(rs.getInt("idpessoa") == cond.getIdPessoa()) throw new SQLException("I am already a proprietario!");
+
+            pstmt2.setInt(1,cond.getIdPessoa());
+            pstmt2.setString(2,cond.getNConducao());
+            pstmt2.setObject(3,cond.getDtNascimento());
             
-            pstmt.executeUpdate();
+            pstmt2.executeUpdate();
             con.commit();
             con.setAutoCommit(true);
             System.out.println("Condutor registered!!!");
 
         }catch (SQLException e) {
-            e.getMessage();
-            System.out.println("Error on insert values");
+            System.out.println(e.getMessage());
+            //System.out.println("Error on insert values");
+        }
+    }
+
+    static void registerVeiculo(Veiculo veiculo){
+
+        final String SELECT_CMD =
+            "select proprietario, count(proprietario) as N_veiculos from veiculo v group by proprietario";
+
+        final String INSERT_CMD =
+            "INSERT INTO veiculo values(?,?,?,?,?,?,?)"; // (id,matricula,tipo,modelo,marca,ano,proprietario)
+
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+            PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
+        ) {
+            
+            con.setAutoCommit(false);
+            ResultSet rs = pstmt1.executeQuery();
+            if(owns20vehicles(rs,veiculo.getProprietario()) == false){
+                throw new SQLException("You can't register me! I already own 20 vehicles!");
+            }
+
+            pstmt2.setInt(1,veiculo.getId());
+            pstmt2.setString(2,veiculo.getMatricula());
+            pstmt2.setInt(3,veiculo.getTipo());
+            pstmt2.setString(4,veiculo.getModelo());
+            pstmt2.setString(5,veiculo.getMarca());
+            pstmt2.setInt(6,veiculo.getAno());
+            pstmt2.setInt(7,veiculo.getProprietario());
+
+            pstmt2.executeUpdate();
+            con.commit();
+            con.setAutoCommit(true);
+            System.out.println("Veiculo registered!!!");
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
         }
     }
 
@@ -106,31 +164,37 @@ class Model {
         return values;
     }
 
-    static boolean owns20vehicles(ArrayList<Integer> vehicles, int id_prop){ // list of vehicles proprietario id's.
-         // verifies if the given proprietario has 20 or more Veiculos.
-        int count = 0;
-        for(int v: vehicles) { // para cada id_prop na lista de veiculos
-            if(v == id_prop) count++;
-            if(count == 20) return true;
+    static boolean owns20vehicles(ResultSet vehicles, int id_prop){ // list of vehicles proprietario id's.
+        try{
+            while (vehicles.next()){
+                if(vehicles.getInt("proprietario") == id_prop){
+                    if(vehicles.getInt("N_veiculos") == 20){
+                        return false;
+                    }
+                }
+            }
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
         }
-        return false;
+        return true;
     }
 
-    static boolean isCondutor(ArrayList<Integer> drivers, int id_prop){
+    // not being used:
+    /*static boolean isCondutor(ArrayList<Integer> drivers, int id_prop){
         // verifies if the given proprietario is a condutor.
         for(int d: drivers) {
             if(d == id_prop) return true;
         }
         return false;
-    }
+    }*/
 
-    static boolean isProprietario(ArrayList<Integer> owners, int id_cond){
+    /*static boolean isProprietario(ArrayList<Integer> owners, int id_cond){
         // verifies if the given condutor is a proprietario.
         for(int p: owners){
             if(p == id_cond) return true;
         }
         return false;
-    }
+    }*/
 
     static void validPessoa(String table,String atrdisc) {
 

@@ -15,7 +15,8 @@ class App{
         Exit, // 1
         registerPessoa, // 2
         registerCondutor, // 3
-        registerProprietario // 4
+        registerProprietario, // 4
+        registerVeiculo // 5
     }
 
     private static App __instance = null;
@@ -28,6 +29,7 @@ class App{
         __dbMethods.put(Option.registerPessoa, new DbWorker() {public void doWork() {App.this.registerPessoa();}});
         __dbMethods.put(Option.registerCondutor, new DbWorker() {public void doWork() {App.this.registerCondutor();}});
         __dbMethods.put(Option.registerProprietario, new DbWorker() {public void doWork() {App.this.registerProprietario();}});
+        __dbMethods.put(Option.registerVeiculo, new DbWorker() {public void doWork() {App.this.registerVeiculo();}});
     }
 
     public static App getInstance()
@@ -49,6 +51,8 @@ class App{
             System.out.println("1. Exit");
             System.out.println("2. Register Pessoa");
             System.out.println("3. Register Condutor");
+            System.out.println("4. Register Proprietario");
+            System.out.println("5. Register veiculo");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -128,11 +132,21 @@ class App{
     private void registerProprietario() {
         Model.validPessoa("proprietario","P");
 
-        String values = Model.input("PROPRIETARIO(idPessoa,dtnascimento)");
+        String values = Model.inputData("PROPRIETARIO(idPessoa,dtnascimento)");
         System.out.println(values);
 
         Proprietario proprietario = new Proprietario(values);
         Model.registerProprietario(proprietario);
+
+    }
+
+    private void registerVeiculo() {
+
+        String values = Model.inputData("VEICULO(id,matricula,tipo,modelo,marca,ano,proprietario)");
+        System.out.println(values);
+
+        Veiculo veiculo = new Veiculo(values);
+        Model.registerVeiculo(veiculo); 
 
     }
 }
