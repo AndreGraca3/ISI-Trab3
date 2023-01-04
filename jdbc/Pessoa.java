@@ -7,7 +7,7 @@ class Pessoa{
     private String nproprio;
     private String apelido;
     private String morada;
-    private int codpostal;
+    private int ntelefone;
     private String localidade;
     private String atrdisc;
 
@@ -19,7 +19,7 @@ class Pessoa{
         nproprio = attributos[3];
         apelido = attributos[4];
         morada = attributos[5];
-        codpostal = Integer.parseInt(attributos[6]);
+        ntelefone = Integer.parseInt(attributos[6]);
         localidade = attributos[7];
         atrdisc = attributos[8];
     }
@@ -36,7 +36,7 @@ class Pessoa{
 
     public String getMorada() { return morada; }
 
-    public Integer getCodpostal() { return codpostal; }
+    public Integer getNtelefone() { return ntelefone; }
 
     public String getLocalidade() { return localidade; }
 
@@ -54,7 +54,7 @@ class Pessoa{
 
     public void setMorada(String morada) { this.morada = morada; }
 
-    public void setCodpostal(int codpostal) { this.codpostal = codpostal; }
+    public void setNtelefone(int ntelefone) { this.ntelefone = ntelefone; }
 
     public void setLocalidade(String localidade) { this.localidade = localidade; }
 

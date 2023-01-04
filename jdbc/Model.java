@@ -84,26 +84,36 @@ class Model {
         }
     }
 
-    static void registerCondutor(Condutor cond){
+    static void registerCondutor(Pessoa pessoa,Condutor cond){
 
-        final String SELECT_CMD =
-            "SELECT * FROM proprietario where idpessoa = ?"; 
 
-        final String INSERT_CMD = 
-                "INSERT INTO condutor values(?,?,?)"; // (idPessoa,ncconducao,dtnascimento)
+        final String INSERT_CMD_PESSOA = 
+                "INSERT INTO pessoa values(?,?,?,?,?,?,?,?,?)"; // (id,noident,NIF,nproprio,apelido,morada,codpostal,localidade, atrdisc)
+
+        final String INSERT_CMD_CONDUTOR = 
+                "INSERT INTO condutor values(?,?,?)"; // (noident,NIF,nproprio,apelido,morada,
+                //codpostal,localidade,ncconducao,dtnascimento)
 
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
-            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
-            PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
+            PreparedStatement pstmt1 = con.prepareStatement(INSERT_CMD_PESSOA);
+            PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD_CONDUTOR);
         ) {
 
             con.setAutoCommit(false);
 
-            pstmt1.setInt(1,cond.getIdPessoa());
-            ResultSet rs = pstmt1.executeQuery();
-            if(rs.getInt("idpessoa") == cond.getIdPessoa()) throw new SQLException("I am already a proprietario!");
+            pstmt1.setInt(1,pessoa.getId()); // id
+            pstmt1.setString(2,pessoa.getNoident()); // noident
+            pstmt1.setString(3,pessoa.getNif()); // nif
+            pstmt1.setString(4,pessoa.getNproprio()); // nproprio
+            pstmt1.setString(5,pessoa.getApelido()); // apelido
+            pstmt1.setString(6,pessoa.getMorada()); // morada
+            pstmt1.setInt(7,pessoa.getNtelefone()); // ntelefone
+            pstmt1.setString(8,pessoa.getLocalidade()); // localidade
+            pstmt1.setString(9,pessoa.getAtrdisc()); // atrdisc
 
+            pstmt1.executeUpdate();
+            
             pstmt2.setInt(1,cond.getIdPessoa());
             pstmt2.setString(2,cond.getNConducao());
             pstmt2.setObject(3,cond.getDtNascimento());
@@ -118,6 +128,8 @@ class Model {
             //System.out.println("Error on insert values");
         }
     }
+
+    //static void registerCliente(Cliente cliente){todo()}
 
     static void registerVeiculo(Veiculo veiculo){
 
@@ -213,27 +225,40 @@ class Model {
         return true;
     }
 
-    // not being used:
-    /*static boolean isCondutor(ArrayList<Integer> drivers, int id_prop){
-        // verifies if the given proprietario is a condutor.
-        for(int d: drivers) {
-            if(d == id_prop) return true;
-        }
-        return false;
-    }*/
+    //vai a tabela pessoa buscar o ultimo id.
+    static int getNextId(){
+        
+        final String SELECT_CMD = String.format( 
+                "SELECT MAX(id) FROM pessoa");
 
-    /*static boolean isProprietario(ArrayList<Integer> owners, int id_cond){
-        // verifies if the given condutor is a proprietario.
-        for(int p: owners){
-            if(p == id_cond) return true;
-        }
-        return false;
-    }*/
+        int id = 0;
 
-    static void validPessoa(String table,String atrdisc) {
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt = con.prepareStatement(SELECT_CMD);
+        ){
+            con.setAutoCommit(false);
+
+            ResultSet res = pstmt.executeQuery();
+            if(res.next()){
+                id = res.getInt("max") + 1;
+            };
+
+            con.commit();
+            con.setAutoCommit(true);
+            System.out.println(id);
+
+        } catch (SQLException e){
+            e.getMessage();
+            System.out.println("Error!!!");
+        }
+        return id;
+    }
+
+    static void showValidPessoa(String table) {
 
         final String SELECT_CMD = String.format(
-        "(SELECT id,nproprio,apelido FROM pessoa WHERE atrdisc = ?) except (SELECT id,nproprio,apelido FROM pessoa p INNER JOIN %s on idpessoa = p.id)",table);
+        "(select id,nproprio , apelido from pessoa where atrdisc = 'CL') except (SELECT id, nproprio, apelido FROM pessoa inner join %s c on id = idpessoa)",table);
         
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
@@ -241,7 +266,6 @@ class Model {
         ) {
             
             con.setAutoCommit(false);
-            pstmt.setString(1,atrdisc);
             ResultSet res = pstmt.executeQuery();
             System.out.print("id   ");
             System.out.print("nproprio  ");
