@@ -13,10 +13,9 @@ class App{
     private enum Option {
         Unknown, // 0
         Exit, // 1
-        registerPessoa, // 2
-        registerCondutor, // 3
-        registerProprietario, // 4
-        registerVeiculo // 5
+        registerCondutor, // 2
+        registerProprietario, // 3
+        registerVeiculo // 4
     }
 
     private static App __instance = null;
@@ -26,7 +25,6 @@ class App{
 
     private App() {
         __dbMethods = new HashMap<Option,DbWorker>();
-        __dbMethods.put(Option.registerPessoa, new DbWorker() {public void doWork() {App.this.registerPessoa();}});
         __dbMethods.put(Option.registerCondutor, new DbWorker() {public void doWork() {App.this.registerCondutor();}});
         __dbMethods.put(Option.registerProprietario, new DbWorker() {public void doWork() {App.this.registerProprietario();}});
         __dbMethods.put(Option.registerVeiculo, new DbWorker() {public void doWork() {App.this.registerVeiculo();}});
@@ -46,12 +44,12 @@ class App{
         Option option = Option.Unknown;
 
         try{
+            //Model.atualizar a lista de veiculos
             System.out.println("Company management");
             System.out.println();
             System.out.println("1. Exit");
-            System.out.println("2. Register Pessoa");
-            System.out.println("3. Register Condutor");
-            System.out.println("4. Register Proprietario");
+            System.out.println("2. Register Condutor");
+            System.out.println("3. Register Proprietario");
             System.out.println("5. Register veiculo");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
@@ -120,17 +118,29 @@ class App{
     }
 
     private void registerCondutor() {// mostrar todas as pessoas que são condutores.(mesma coisa que proprietario)
-        Model.validPessoa("condutor","C"); // displays valid pessoas to add to condutor.
+        Model.showValidPessoa("condutor"); // displays valid pessoas to add to condutor.
 
-        String values = Model.inputData("CONDUTOR(idPessoa,nccondução,dtnascimento)");
+        String values = 
+            Model.inputData("Identification number, NIF, first name, last name, address, postal code, region, licence number, birthdate");
+
         System.out.println(values); // debug purposes.
+        String[] splitedValues = values.split(",");
+        
+        int id = Model.getNextId();
+                              //id           Ncconducao             dtnascimento
+        String condutorValues = id + "," + splitedValues[7] + "," + splitedValues[8];
+                            //id            noident                 NIF                     nproprio                    apelido                 morada                  codPostal               localidade
+        String pessoaValues = id + "," + splitedValues[0] + "," + splitedValues[1] + "," + splitedValues[2] + "," + splitedValues[3] + "," + splitedValues[4] + "," + splitedValues[5] + "," + splitedValues[6] + "," + "C";
 
-        Condutor condutor = new Condutor(values);
-        Model.registerCondutor(condutor);
+        Condutor condutor = new Condutor(condutorValues);
+        Pessoa pessoa = new Pessoa(pessoaValues);
+
+        Model.registerCondutor(pessoa,condutor);
     }
 
     private void registerProprietario() {
-        Model.validPessoa("proprietario","P");
+
+        Model.showValidPessoa("proprietario");
 
         String values = Model.inputData("PROPRIETARIO(idPessoa,dtnascimento)");
         System.out.println(values);
