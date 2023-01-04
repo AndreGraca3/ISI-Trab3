@@ -32,8 +32,10 @@ class Model {
             pstmt.executeUpdate();
             con.commit();
             con.setAutoCommit(true);
-            System.out.println("Cliente registered!!!");
-        }catch (SQLException e){
+            if(pessoa.getAtrdisc() == "CL"){
+                System.out.println("Cliente registered!!!");
+            }else System.out.println("Pessoa registered!!!");
+            }catch (SQLException e){
             e.getMessage();
             System.out.println("Error on insert values");
         }
@@ -57,9 +59,10 @@ class Model {
 
             pstmt1.setInt(1,prop.getIdPessoa());
             ResultSet rs = pstmt1.executeQuery();
-            if(rs.getInt("idpessoa") == prop.getIdPessoa()) throw new SQLException("I am already a proprietario!");
-
-
+            while(rs.next()){
+                if(rs.getInt("idpessoa") == prop.getIdPessoa()) throw new SQLException("I am already a proprietario!");
+            }
+            
             pstmt2.setInt(1,prop.getIdPessoa());
             pstmt2.setObject(2,prop.getDtNascimento());
 
@@ -97,9 +100,6 @@ class Model {
             System.out.println("Condutor registered!!!");
 
         }catch (SQLException e) {
-            if(e.getMessage() == "insert or update on table 'condutor' violates foreign key constraint 'condutor_idpessoa_fkey"){
-                System.out.println("There is no pessoa in the table above, it means you need to introduce a new condutor with all the info.");
-            };
             System.out.println(e.getMessage());
             //System.out.println("Error on insert values");
         }
