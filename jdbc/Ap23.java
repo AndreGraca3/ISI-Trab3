@@ -183,6 +183,21 @@ class App{
         String proprietarioValues;
         String pessoaValues;
 
+        if(splitedValues.length != 8 && splitedValues.length != 2){
+            System.out.println("Not a valid amout of values introduced! introduced: " + splitedValues.length);
+            System.out.println("Expected 2 (add) or 8 (new).");
+            System.out.println("Want to try again?(Y/N)");
+            Scanner s = new Scanner(System.in);
+            char answer = s.next().charAt(0);
+            try{
+                if(answer == 'Y' || answer == 'y'){
+                    registerProprietario();
+                }
+            }catch(Exception e) {
+                    //nothing to do;
+            } 
+        } 
+
         if(splitedValues.length == 8){ // adding to PESSOA and PROPRIETARIO.
                             //id          dtnascimento                                    
             proprietarioValues = id + "," + splitedValues[7];
@@ -204,20 +219,6 @@ class App{
             Model.registerProprietario(proprietario);
         }
 
-        if(splitedValues.length != 8 || splitedValues.length != 2){
-            System.out.println("Not a valid amout of values introduced! introduced: " + splitedValues.length);
-            System.out.println("Expected 2 (add) or 8 (new).");
-            System.out.println("Want to try again?(Y/N)");
-            Scanner s = new Scanner(System.in);
-            char answer = s.next().charAt(0);
-            try{
-                if(answer == 'Y' || answer == 'y'){
-                    registerProprietario();
-                }
-            }catch(Exception e) {
-                    //nothing to do;
-            } 
-        } 
     }
 
     private void registerCliente() {
