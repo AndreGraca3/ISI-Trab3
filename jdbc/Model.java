@@ -169,6 +169,39 @@ class Model {
         }
     }
 
+    static void listDriversWithNoTrips(){
+        final String SELECT_CMD =
+            "select id,(nproprio || ' ' || apelido) as nome_condutor,nif from pessoa p1 inner join condutor C on id = idpessoa left outer join periodoativo p2 on idpessoa = condutor where condutor isnull;";
+
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+        ) {
+            
+            con.setAutoCommit(false);
+            ResultSet rs = pstmt1.executeQuery();
+            
+             System.out.print("Nome                 ");
+            System.out.println("NIF");
+
+            while (rs.next()){
+                System.out.print(rs.getString("nome_condutor"));
+
+                int nome_condutor_length = (rs.getString("nome_condutor")).length();
+                for(int steps = nome_condutor_length ; steps < 20 ; steps++){
+                    System.out.print(" ");
+                }
+
+                System.out.println(rs.getInt("nif"));
+            }
+            con.commit();
+            con.setAutoCommit(true);
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
     static String inputData(String str){
         java.util.Scanner key = new Scanner(System.in);
         System.out.println("Enter corresponding values, separated by commas, \n" + str); 

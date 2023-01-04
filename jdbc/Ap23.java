@@ -17,7 +17,8 @@ class App{
         registerProprietario, // 3
         registerCliente, // 4
         registerVeiculo, // 5
-        listClientsWithMostTrips // 6
+        listClientsWithMostTrips, // 6
+        listDriversWithNoTrips // 7
     }
 
     private static App __instance = null;
@@ -32,6 +33,7 @@ class App{
         __dbMethods.put(Option.registerCliente, new DbWorker() {public void doWork() {App.this.registerCliente();}});
         __dbMethods.put(Option.registerVeiculo, new DbWorker() {public void doWork() {App.this.registerVeiculo();}});
         __dbMethods.put(Option.listClientsWithMostTrips, new DbWorker() {public void doWork() {App.this.listClientsWithMostTrips();}});
+        __dbMethods.put(Option.listDriversWithNoTrips, new DbWorker() {public void doWork() {App.this.listDriversWithNoTrips();}});
     }
 
     public static App getInstance()
@@ -56,6 +58,7 @@ class App{
             System.out.println("4. Register Cliente");
             System.out.println("5. Register veiculo");
             System.out.println("6. List clients with most trips in a Year");
+            System.out.println("7. List Drivers with no trips");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -273,6 +276,10 @@ class App{
     private void listClientsWithMostTrips() {
         String year = Model.inputData("Select the year");
         Model.listClientsWithMostTrips(year); 
+    }
+
+    private void listDriversWithNoTrips() {
+        Model.listDriversWithNoTrips();
     }
 }
 
