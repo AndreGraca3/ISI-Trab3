@@ -181,7 +181,7 @@ class Model {
             con.setAutoCommit(false);
             ResultSet rs = pstmt1.executeQuery();
             
-             System.out.print("Nome                 ");
+            System.out.print("Nome                 ");
             System.out.println("NIF");
 
             while (rs.next()){
