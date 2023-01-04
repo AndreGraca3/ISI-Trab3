@@ -16,7 +16,8 @@ class App{
         registerPessoa, // 2
         registerCondutor, // 3
         registerProprietario, // 4
-        registerVeiculo // 5
+        registerVeiculo, // 5
+        listClientsWithMostTrips // 6
     }
 
     private static App __instance = null;
@@ -30,6 +31,7 @@ class App{
         __dbMethods.put(Option.registerCondutor, new DbWorker() {public void doWork() {App.this.registerCondutor();}});
         __dbMethods.put(Option.registerProprietario, new DbWorker() {public void doWork() {App.this.registerProprietario();}});
         __dbMethods.put(Option.registerVeiculo, new DbWorker() {public void doWork() {App.this.registerVeiculo();}});
+        __dbMethods.put(Option.listClientsWithMostTrips, new DbWorker() {public void doWork() {App.this.listClientsWithMostTrips();}});
     }
 
     public static App getInstance()
@@ -46,13 +48,14 @@ class App{
         Option option = Option.Unknown;
 
         try{
-            System.out.println("Company management");
+            System.out.println("Company Management");
             System.out.println();
             System.out.println("1. Exit");
             System.out.println("2. Register Pessoa");
             System.out.println("3. Register Condutor");
             System.out.println("4. Register Proprietario");
-            System.out.println("5. Register veiculo");
+            System.out.println("5. Register Veiculo");
+            System.out.println("6. List clients with most trips in a Year");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -147,6 +150,12 @@ class App{
 
         Veiculo veiculo = new Veiculo(values);
         Model.registerVeiculo(veiculo); 
+
+    }
+
+     private void listClientsWithMostTrips() {
+        String year = Model.inputData("Select the year");
+        Model.listClientsWithMostTrips(year); 
 
     }
 }
