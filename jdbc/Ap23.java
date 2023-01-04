@@ -16,7 +16,8 @@ class App{
         registerCondutor, // 2
         registerProprietario, // 3
         registerCliente, // 4
-        registerVeiculo // 5
+        registerVeiculo, // 5
+        listClientsWithMostTrips // 6
     }
 
     private static App __instance = null;
@@ -30,6 +31,7 @@ class App{
         __dbMethods.put(Option.registerProprietario, new DbWorker() {public void doWork() {App.this.registerProprietario();}});
         __dbMethods.put(Option.registerCliente, new DbWorker() {public void doWork() {App.this.registerCliente();}});
         __dbMethods.put(Option.registerVeiculo, new DbWorker() {public void doWork() {App.this.registerVeiculo();}});
+        __dbMethods.put(Option.listClientsWithMostTrips, new DbWorker() {public void doWork() {App.this.listClientsWithMostTrips();}});
     }
 
     public static App getInstance()
@@ -46,14 +48,14 @@ class App{
         Option option = Option.Unknown;
 
         try{
-            //Model.atualizar a lista de veiculos
-            System.out.println("Company management");
+            System.out.println("Company Management");
             System.out.println();
             System.out.println("1. Exit");
             System.out.println("2. Register Condutor");
             System.out.println("3. Register Proprietario");
             System.out.println("4. Register Cliente");
             System.out.println("5. Register veiculo");
+            System.out.println("6. List clients with most trips in a Year");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -118,13 +120,29 @@ class App{
             Model.inputData("new => Identification number, NIF, first name, last name, address, phone number, region, licence number, birthdate.\nAlready registered => id from the table above, licence number, birthdate.");
 
         String[] splitedValues = values.split(",");
-        
+
         int id = Model.getNextId("pessoa");
 
         String condutorValues;
         String pessoaValues;
+    
+        if(splitedValues.length != 9 && splitedValues.length != 3){
+            System.out.println("Not a valid amout of values introduced! introduced: " + splitedValues.length);
+            System.out.println("Expected 3 (add) or 9 (new).");
+            System.out.println("Want to try again?(Y/N)");
+            Scanner s = new Scanner(System.in);
+            char answer = s.next().charAt(0);
+            try{
+                if(answer == 'Y' || answer == 'y'){
+                    clearConsole();
+                    registerCondutor();
+                }
+            }catch(Exception e) {
+                    //nothing to do;
+            } 
+        } 
 
-        if(values.length() == 9){ // adding to PESSOA and Condutor.
+        if(splitedValues.length == 9){ // adding to PESSOA and Condutor.
                             //id           Ncconducao             dtnascimento                                    
             condutorValues = id + "," + splitedValues[7] + "," + splitedValues[8];
                             //id            noident                 NIF                     nproprio                    apelido                 morada                  codPostal               localidade
@@ -137,7 +155,7 @@ class App{
             Model.registerCondutor(condutor);
         }
 
-        if(values.length() == 3){ // already exists in PESSOA, just need info for Condutor.
+        if(splitedValues.length == 3){ // already exists in PESSOA, just need info for Condutor.
             condutorValues = values;
 
             Condutor condutor = new Condutor(condutorValues);
@@ -145,23 +163,6 @@ class App{
             Model.registerCondutor(condutor);
         }
 
-        if(values.length() != 9 || values.length() != 3){
-            System.out.println("Not a valid amout of values introduced! introduced: " + values.length());
-            System.out.println("Expected 3 (add) or 9 (new).");
-            System.out.println("Want to try again?(Y/N)");
-            Scanner s = new Scanner(System.in);
-            char answer = s.next().charAt(0);
-            try{
-                clearConsole();
-                if(answer == 'Y' || answer == 'y'){
-                    registerCondutor();
-                } else {
-                    App.getInstance().Run();    
-                } 
-            }catch(Exception e) {
-                    //nothing to do;
-            } 
-        } 
     }
 
     private void registerProprietario() {
@@ -176,7 +177,7 @@ class App{
         String proprietarioValues;
         String pessoaValues;
 
-        if(values.length() == 8){ // adding to PESSOA and PROPRIETARIO.
+        if(splitedValues.length == 8){ // adding to PESSOA and PROPRIETARIO.
                             //id          dtnascimento                                    
             proprietarioValues = id + "," + splitedValues[7];
                             //id            noident                 NIF                     nproprio                    apelido                 morada                  codPostal               localidade
@@ -189,7 +190,7 @@ class App{
             Model.registerProprietario(proprietario);
         }
 
-        if(values.length() == 2){ // already exists in PESSOA, just need info for PROPRIETARIO.
+        if(splitedValues.length == 2){ // already exists in PESSOA, just need info for PROPRIETARIO.
             proprietarioValues = values;
 
             Proprietario proprietario = new Proprietario(proprietarioValues);
@@ -197,19 +198,16 @@ class App{
             Model.registerProprietario(proprietario);
         }
 
-        if(values.length() != 8 || values.length() != 2){
-            System.out.println("Not a valid amout of values introduced! introduced: " + values.length());
+        if(splitedValues.length != 8 || splitedValues.length != 2){
+            System.out.println("Not a valid amout of values introduced! introduced: " + splitedValues.length);
             System.out.println("Expected 2 (add) or 8 (new).");
             System.out.println("Want to try again?(Y/N)");
             Scanner s = new Scanner(System.in);
             char answer = s.next().charAt(0);
             try{
-                clearConsole();
                 if(answer == 'Y' || answer == 'y'){
                     registerProprietario();
-                } else {
-                    App.getInstance().Run();    
-                } 
+                }
             }catch(Exception e) {
                     //nothing to do;
             } 
@@ -234,18 +232,16 @@ class App{
         String[] splitedValues = values.split(",");
 
         if(splitedValues.length != 6){
-            System.out.println("Not a valid amout of values introduced! introduced: " + values.length());
+            System.out.println("Not a valid amout of values introduced! introduced: " + splitedValues.length);
             System.out.println("Expected 6.");
             System.out.println("Want to try again?(Y/N)");
             Scanner s = new Scanner(System.in);
             char answer = s.next().charAt(0);
             try{
-                clearConsole();
                 if(answer == 'Y' || answer == 'y'){
+                    clearConsole();
                     registerVeiculo();
-                } else {
-                    App.getInstance().Run();    
-                } 
+                }
             }catch(Exception e) {
                 //nothing to do;
             } 
@@ -259,22 +255,24 @@ class App{
                 System.out.println("Adding this new vehicle will remove the older vehicle owned by this owner!");
                 System.out.println("Do you want to add this new vehicle?(Y/N)");
                 Scanner s = new Scanner(System.in);
-                char answer = s.next().charAt(0);
-                if(answer == 'N' || answer == 'n'){
-                    clearConsole();
-                    
+                char answer = s.next().charAt(0); 
+                if(answer == 'Y' || answer == 'Y'){
+                    int nextId = Model.getNextId("veiculo");       
+
+                    String veiculoValues = nextId + "," + values;
+
+                    Veiculo veiculo = new Veiculo(veiculoValues);
+                    Model.registerVeiculo(veiculo);
                 }
             }
         } catch(Exception e){
             //nothing to do;
         }
+    }
 
-        int nextId = Model.getNextId("veiculo");       
-
-        String veiculoValues = nextId + "," + values;
-
-        Veiculo veiculo = new Veiculo(veiculoValues);
-        Model.registerVeiculo(veiculo); 
+    private void listClientsWithMostTrips() {
+        String year = Model.inputData("Select the year");
+        Model.listClientsWithMostTrips(year); 
     }
 }
 

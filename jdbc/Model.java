@@ -97,6 +97,9 @@ class Model {
             System.out.println("Condutor registered!!!");
 
         }catch (SQLException e) {
+            if(e.getMessage() == "insert or update on table 'condutor' violates foreign key constraint 'condutor_idpessoa_fkey"){
+                System.out.println("There is no pessoa in the table above, it means you need to introduce a new condutor with all the info.");
+            };
             System.out.println(e.getMessage());
             //System.out.println("Error on insert values");
         }
@@ -126,6 +129,40 @@ class Model {
             con.commit();
             con.setAutoCommit(true);
             System.out.println("Veiculo registered!!!");
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    static void listClientsWithMostTrips(String year){
+        final String SELECT_CMD =
+            String.format("select nome_cliente, max(N_viagens) as Mais_viagens from(select id,(nproprio || ' ' || apelido) as nome_cliente,nif, count(c.idpessoa) as N_viagens from clienteviagem c inner join viagem v on viagem = idSistema inner join pessoa p on id = idpessoa where extract(year from v.dtviagem) = %s group by p.id) as A group by nome_cliente", year);
+
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+        ) {
+            
+            con.setAutoCommit(false);
+            ResultSet rs = pstmt1.executeQuery();
+            
+            System.out.print("Nome              ");
+            System.out.println("Viagens");
+
+            while (rs.next()){
+                System.out.print(rs.getString("nome_cliente"));
+
+                int nome_cliente_length = (rs.getString("nome_cliente")).length();
+                for(int steps = nome_cliente_length ; steps < 20 ; steps++){
+                    System.out.print(" ");
+                }
+
+                System.out.println(rs.getInt("Mais_viagens"));
+            }
+           
+            con.commit();
+            con.setAutoCommit(true);
 
         }catch (SQLException e){
             System.out.println(e.getMessage());
