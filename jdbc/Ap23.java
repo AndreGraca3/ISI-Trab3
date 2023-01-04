@@ -18,7 +18,8 @@ class App{
         registerCliente, // 4
         registerVeiculo, // 5
         listClientsWithMostTrips, // 6
-        listDriversWithNoTrips // 7
+        listDriversWithNoTrips, // 7
+        countOwnerCarsTrips // 8
     }
 
     private static App __instance = null;
@@ -34,6 +35,7 @@ class App{
         __dbMethods.put(Option.registerVeiculo, new DbWorker() {public void doWork() {App.this.registerVeiculo();}});
         __dbMethods.put(Option.listClientsWithMostTrips, new DbWorker() {public void doWork() {App.this.listClientsWithMostTrips();}});
         __dbMethods.put(Option.listDriversWithNoTrips, new DbWorker() {public void doWork() {App.this.listDriversWithNoTrips();}});
+        __dbMethods.put(Option.countOwnerCarsTrips, new DbWorker() {public void doWork() {App.this.countOwnerCarsTrips();}});
     }
 
     public static App getInstance()
@@ -59,6 +61,7 @@ class App{
             System.out.println("5. Register veiculo");
             System.out.println("6. List clients with most trips in a Year");
             System.out.println("7. List Drivers with no trips");
+            System.out.println("8. Count Cars Trips for a Specific Owner");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -280,6 +283,12 @@ class App{
 
     private void listDriversWithNoTrips() {
         Model.listDriversWithNoTrips();
+    }
+
+    private void countOwnerCarsTrips() {
+        String values = Model.inputData("Name/NIF, Year");
+        String[] splitedValues = values.split(",");
+        Model.countOwnerCarsTrips(splitedValues[0], Integer.parseInt(splitedValues[1]));
     }
 }
 

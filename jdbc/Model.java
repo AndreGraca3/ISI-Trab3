@@ -202,6 +202,62 @@ class Model {
         }
     }
 
+    static void countOwnerCarsTrips(String info, int year){
+        String SELECT_CMD;
+        try {
+            Integer.parseInt(info);
+            SELECT_CMD =
+            String.format("select p1.nproprio, p1.nif,extract(year from p3.dtinicio) as ano,count(v1.id) as N_viagens from pessoa p1 inner join proprietario p2 on p1.nif  = '%s' inner join veiculo v1 on v1.proprietario = p2.idpessoa inner join periodoativo p3 on p3.veiculo = v1.id and extract(year from p3.dtinicio) = '%d' group by p1.nproprio, p1.nif,extract(year from p3.dtinicio)",info,year);
+        } catch(NumberFormatException e) {
+            SELECT_CMD =
+            String.format("select p1.nproprio, p1.nif,extract(year from p3.dtinicio) as ano,count(v1.id) as N_viagens from pessoa p1 inner join proprietario p2 on p1.nproprio  = '%s' inner join veiculo v1 on v1.proprietario = p2.idpessoa inner join periodoativo p3 on p3.veiculo = v1.id and extract(year from p3.dtinicio) = '%d' group by p1.nproprio, p1.nif,extract(year from p3.dtinicio)",info,year);
+          
+        }
+  
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+        ) {
+            
+            con.setAutoCommit(false);
+            ResultSet rs = pstmt1.executeQuery();
+
+             System.out.print("Nome                 ");
+             System.out.print("NIF                 ");
+             System.out.print("Ano              ");
+             System.out.println("Viagens");
+
+            while (rs.next()){
+                System.out.print(rs.getString("nproprio"));
+
+                int nproprio_length = (rs.getString("nproprio")).length();
+                for(int steps = nproprio_length ; steps < 20 ; steps++){
+                    System.out.print(" ");
+                }
+
+                System.out.print(rs.getInt("nif"));
+                int nif_length = Integer.toString(rs.getInt("nif")).length();
+                for(int steps = nif_length ; steps < 20 ; steps++){
+                    System.out.print(" ");
+                }
+
+                System.out.print(rs.getInt("ano"));
+                int ano_length = Integer.toString(rs.getInt("ano")).length();
+                for(int steps = ano_length ; steps < 20 ; steps++){
+                    System.out.print(" ");
+                }
+
+                System.out.println(rs.getInt("n_viagens"));
+                int viagens_length = Integer.toString(rs.getInt("n_viagens")).length();
+            }
+            con.commit();
+            con.setAutoCommit(true);
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
     static String inputData(String str){
         java.util.Scanner key = new Scanner(System.in);
         System.out.println("Enter corresponding values, separated by commas, \n" + str); 
