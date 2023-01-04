@@ -15,7 +15,8 @@ class App{
         Exit, // 1
         registerCondutor, // 2
         registerProprietario, // 3
-        registerVeiculo // 4
+        registerCliente, // 4
+        registerVeiculo // 5
     }
 
     private static App __instance = null;
@@ -27,6 +28,7 @@ class App{
         __dbMethods = new HashMap<Option,DbWorker>();
         __dbMethods.put(Option.registerCondutor, new DbWorker() {public void doWork() {App.this.registerCondutor();}});
         __dbMethods.put(Option.registerProprietario, new DbWorker() {public void doWork() {App.this.registerProprietario();}});
+        __dbMethods.put(Option.registerCliente, new DbWorker() {public void doWork() {App.this.registerCliente();}});
         __dbMethods.put(Option.registerVeiculo, new DbWorker() {public void doWork() {App.this.registerVeiculo();}});
     }
 
@@ -50,6 +52,7 @@ class App{
             System.out.println("1. Exit");
             System.out.println("2. Register Condutor");
             System.out.println("3. Register Proprietario");
+            System.out.println("4. Register Cliente");
             System.out.println("5. Register veiculo");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
@@ -108,56 +111,170 @@ class App{
         __connectionString = s;
     }
 
-    private void registerPessoa() {
-
-        String values = Model.inputData("PESSOA(id,Noident,NIF,nproprio,apelido,morada,CodPostal,localidade,atrdisc)");
-        System.out.println(values); // debug purposes.
-
-        Pessoa pessoa = new Pessoa(values);
-        Model.registerPessoa(pessoa);
-    }
-
-    private void registerCondutor() {// mostrar todas as pessoas que são condutores.(mesma coisa que proprietario)
-        Model.showValidPessoa("condutor"); // displays valid pessoas to add to condutor.
+    private void registerCondutor() {
+        Model.showValidPessoa(); // displays valid pessoas to add to condutor.
 
         String values = 
-            Model.inputData("Identification number, NIF, first name, last name, address, postal code, region, licence number, birthdate");
+            Model.inputData("new => Identification number, NIF, first name, last name, address, phone number, region, licence number, birthdate.\nAlready registered => id from the table above, licence number, birthdate.");
 
-        System.out.println(values); // debug purposes.
         String[] splitedValues = values.split(",");
         
-        int id = Model.getNextId();
-                              //id           Ncconducao             dtnascimento
-        String condutorValues = id + "," + splitedValues[7] + "," + splitedValues[8];
+        int id = Model.getNextId("pessoa");
+
+        String condutorValues;
+        String pessoaValues;
+
+        if(values.length() == 9){ // adding to PESSOA and Condutor.
+                            //id           Ncconducao             dtnascimento                                    
+            condutorValues = id + "," + splitedValues[7] + "," + splitedValues[8];
                             //id            noident                 NIF                     nproprio                    apelido                 morada                  codPostal               localidade
-        String pessoaValues = id + "," + splitedValues[0] + "," + splitedValues[1] + "," + splitedValues[2] + "," + splitedValues[3] + "," + splitedValues[4] + "," + splitedValues[5] + "," + splitedValues[6] + "," + "C";
+            pessoaValues = id + "," + splitedValues[0] + "," + splitedValues[1] + "," + splitedValues[2] + "," + splitedValues[3] + "," + splitedValues[4] + "," + splitedValues[5] + "," + splitedValues[6] + "," + "C";
 
-        Condutor condutor = new Condutor(condutorValues);
-        Pessoa pessoa = new Pessoa(pessoaValues);
+            Condutor condutor = new Condutor(condutorValues);
+            Pessoa pessoa = new Pessoa(pessoaValues);
 
-        Model.registerCondutor(pessoa,condutor);
+            Model.registerPessoa(pessoa);
+            Model.registerCondutor(condutor);
+        }
+
+        if(values.length() == 3){ // already exists in PESSOA, just need info for Condutor.
+            condutorValues = values;
+
+            Condutor condutor = new Condutor(condutorValues);
+
+            Model.registerCondutor(condutor);
+        }
+
+        if(values.length() != 9 || values.length() != 3){
+            System.out.println("Not a valid amout of values introduced! introduced: " + values.length());
+            System.out.println("Expected 3 (add) or 9 (new).");
+            System.out.println("Want to try again?(Y/N)");
+            Scanner s = new Scanner(System.in);
+            char answer = s.next().charAt(0);
+            try{
+                clearConsole();
+                if(answer == 'Y' || answer == 'y'){
+                    registerCondutor();
+                } else {
+                    App.getInstance().Run();    
+                } 
+            }catch(Exception e) {
+                    //nothing to do;
+            } 
+        } 
     }
 
     private void registerProprietario() {
+        Model.showValidPessoa();
 
-        Model.showValidPessoa("proprietario");
+        String values = Model.inputData("new => Identification number, NIF, first name, last name, address, phone number, region, birthdate.\nAlready registered => id from the table above and birthdate.");
 
-        String values = Model.inputData("PROPRIETARIO(idPessoa,dtnascimento)");
-        System.out.println(values);
+        String[] splitedValues = values.split(",");
+        
+        int id = Model.getNextId("pessoa");
 
-        Proprietario proprietario = new Proprietario(values);
-        Model.registerProprietario(proprietario);
+        String proprietarioValues;
+        String pessoaValues;
 
+        if(values.length() == 8){ // adding to PESSOA and PROPRIETARIO.
+                            //id          dtnascimento                                    
+            proprietarioValues = id + "," + splitedValues[7];
+                            //id            noident                 NIF                     nproprio                    apelido                 morada                  codPostal               localidade
+            pessoaValues = id + "," + splitedValues[0] + "," + splitedValues[1] + "," + splitedValues[2] + "," + splitedValues[3] + "," + splitedValues[4] + "," + splitedValues[5] + "," + splitedValues[6] + "," + "C";
+
+            Proprietario proprietario = new Proprietario(proprietarioValues);
+            Pessoa pessoa = new Pessoa(pessoaValues);
+
+            Model.registerPessoa(pessoa);
+            Model.registerProprietario(proprietario);
+        }
+
+        if(values.length() == 2){ // already exists in PESSOA, just need info for PROPRIETARIO.
+            proprietarioValues = values;
+
+            Proprietario proprietario = new Proprietario(proprietarioValues);
+
+            Model.registerProprietario(proprietario);
+        }
+
+        if(values.length() != 8 || values.length() != 2){
+            System.out.println("Not a valid amout of values introduced! introduced: " + values.length());
+            System.out.println("Expected 2 (add) or 8 (new).");
+            System.out.println("Want to try again?(Y/N)");
+            Scanner s = new Scanner(System.in);
+            char answer = s.next().charAt(0);
+            try{
+                clearConsole();
+                if(answer == 'Y' || answer == 'y'){
+                    registerProprietario();
+                } else {
+                    App.getInstance().Run();    
+                } 
+            }catch(Exception e) {
+                    //nothing to do;
+            } 
+        } 
+    }
+
+    private void registerCliente() {
+
+        String values = Model.inputData("Identification number, NIF, first name, last name, address, phone number, region");
+        System.out.println(values); // debug purposes.
+
+        String clienteValues = Model.getNextId("pessoa") + "," + values + "," + "CL";
+
+        Pessoa cliente = new Pessoa(clienteValues);
+        Model.registerPessoa(cliente);
     }
 
     private void registerVeiculo() {
 
-        String values = Model.inputData("VEICULO(id,matricula,tipo,modelo,marca,ano,proprietario)");
-        System.out.println(values);
+        String values = Model.inputData("license plate, type, model, brand, year, owner");
+       
+        String[] splitedValues = values.split(",");
 
-        Veiculo veiculo = new Veiculo(values);
+        if(splitedValues.length != 6){
+            System.out.println("Not a valid amout of values introduced! introduced: " + values.length());
+            System.out.println("Expected 6.");
+            System.out.println("Want to try again?(Y/N)");
+            Scanner s = new Scanner(System.in);
+            char answer = s.next().charAt(0);
+            try{
+                clearConsole();
+                if(answer == 'Y' || answer == 'y'){
+                    registerVeiculo();
+                } else {
+                    App.getInstance().Run();    
+                } 
+            }catch(Exception e) {
+                //nothing to do;
+            } 
+        }   
+
+        int owner_id = Integer.parseInt(splitedValues[5]);
+
+        try{                        //owner
+            if(Model.owns20vehicles(owner_id) == true){
+                System.out.println("You are trying to add a new vehicle to a owner wich already owns 20 vehicles");
+                System.out.println("Adding this new vehicle will remove the older vehicle owned by this owner!");
+                System.out.println("Do you want to add this new vehicle?(Y/N)");
+                Scanner s = new Scanner(System.in);
+                char answer = s.next().charAt(0);
+                if(answer == 'N' || answer == 'n'){
+                    clearConsole();
+                    
+                }
+            }
+        } catch(Exception e){
+            //nothing to do;
+        }
+
+        int nextId = Model.getNextId("veiculo");       
+
+        String veiculoValues = nextId + "," + values;
+
+        Veiculo veiculo = new Veiculo(veiculoValues);
         Model.registerVeiculo(veiculo); 
-
     }
 }
 
