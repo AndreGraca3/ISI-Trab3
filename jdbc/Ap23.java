@@ -54,6 +54,7 @@ class App{
         Option option = Option.Unknown;
 
         try{
+            Model.changeValidTypes();
             System.out.println("Company Management");
             System.out.println();
             System.out.println("1. Exit");
@@ -237,12 +238,13 @@ class App{
     }
 
     private void registerVeiculo() {
+        Model.printResult("tipoveiculo");
 
-        String values = Model.inputData("license plate, type, model, brand, year, owner");
+        String values = Model.inputData("license plate, Number of seats, multiplier, designation, model, brand, year, owner");
        
         String[] splitedValues = values.split(",");
 
-        if(splitedValues.length != 6){
+        if(splitedValues.length != 8){
             System.out.println("Not a valid amout of values introduced! introduced: " + splitedValues.length);
             System.out.println("Expected 6.");
             System.out.println("Want to try again?(Y/N)");
@@ -258,7 +260,7 @@ class App{
             } 
         }   
 
-        if(splitedValues.length == 6){
+        if(splitedValues.length == 8){
             int owner_id = Integer.parseInt(splitedValues[5]);
             int nextId = Model.getNextId("veiculo"); 
             String veiculoValues = nextId + "," + values;
@@ -272,7 +274,7 @@ class App{
                     System.out.println("Do you want to add this new vehicle?(Y/N)");
                     Scanner s = new Scanner(System.in);
                     char answer = s.next().charAt(0); 
-                    if(answer == 'Y' || answer == 'Y'){    
+                    if(answer == 'Y' || answer == 'y'){    
                         Model.removeAndUpdateVeiculo(veiculo,owner_id);
                     }
                 }else{

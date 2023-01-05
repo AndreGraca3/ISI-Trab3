@@ -483,4 +483,27 @@ class Model {
             System.out.println("Error!!!");
         }
     }
+
+    static void changeValidTypes() {
+
+        final String UPDATE_CMD =
+                "";
+
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt = con.prepareStatement(UPDATE_CMD);
+        ){
+
+            con.setAutoCommit(false);
+
+            pstmt.executeUpdate();
+
+            con.commit();
+            con.setAutoCommit(true);
+        } catch( SQLException e){
+            System.out.println(e.getMessage());
+        }
+
+    }
+
 }
