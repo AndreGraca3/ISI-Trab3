@@ -339,6 +339,52 @@ class Model {
         return values;
     }
 
+    static void printResult(String table){
+        String SELECT_CMD = String.format("SELECT * FROM %s", table);
+        final int TAB_SIZE = 8;
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+        ) {
+            
+            con.setAutoCommit(false);
+            ResultSet rs = pstmt1.executeQuery();
+            ResultSetMetaData meta = rs.getMetaData();
+            int columnsCount = meta.getColumnCount();
+            StringBuffer sep = new StringBuffer("\n");
+
+            // This code is just demonstrative and only works for the two
+            // columns existing in the table jdbcdemo
+            for (int i = 1; i <= columnsCount; i++) {
+                System.out.print(meta.getColumnLabel(i));
+                System.out.print("\t");
+                
+                for (int j = 0; j < meta.getColumnDisplaySize(i)+TAB_SIZE; j++) {
+                    sep.append('-');
+               }
+            }
+            System.out.println(sep);
+            // Step 4 - Get result
+            while (rs.next()) {
+                // It's not the best way to do it. But as in this case the result
+                // is to be exclusively displayed on the console, the practical
+                // result serves
+                for (int i = 1; i <= columnsCount; i++) {
+                    System.out.print(rs.getObject(i));
+                    System.out.print("\t");
+                }
+                System.out.println();
+            }
+			System.out.println();
+
+            con.commit();
+            con.setAutoCommit(true);
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
     static boolean owns20vehicles(int id_prop){ // list of vehicles proprietario id's.
 
         final String SELECT_CMD =
