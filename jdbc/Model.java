@@ -44,15 +44,19 @@ class Model {
     static void registerProprietario(Proprietario prop){
 
         final String SELECT_CMD = 
-                "SELECT * FROM condutor where idpessoa = ?";
+                "SELECT idpessoa FROM condutor where idpessoa = ?";
         
         final String INSERT_CMD = 
                 "INSERT INTO proprietario values(?,?) ";
+
+        final String UPDATE_CMD = 
+                "update pessoa set atrdisc = P where id = ?";
 
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
             PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
             PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD);
+            PreparedStatement pstmt3 = con.prepareStatement(UPDATE_CMD);
         ) {
             
             con.setAutoCommit(false);
@@ -60,41 +64,64 @@ class Model {
             pstmt1.setInt(1,prop.getIdPessoa());
             ResultSet rs = pstmt1.executeQuery();
             while(rs.next()){
-                if(rs.getInt("idpessoa") == prop.getIdPessoa()) throw new SQLException("I am already a proprietario!");
+                if(rs.getInt("idpessoa") == prop.getIdPessoa()) throw new SQLException("I am already a Condutor! So you can't register me as a Proprietario.");
             }
             
             pstmt2.setInt(1,prop.getIdPessoa());
             pstmt2.setObject(2,prop.getDtNascimento());
 
-            pstmt2.executeUpdate();
+            pstmt2.executeUpdate(); // executamos primeiro este que é para não dar erro.
+
+            pstmt3.setString(1,"P");
+            pstmt3.setInt(2,prop.getIdPessoa());
+
+            pstmt3.executeUpdate();
             con.commit();
             con.setAutoCommit(true);
             System.out.println("Proprietario registered!!!");
 
         }catch (SQLException e){
             System.out.println(e.getMessage());
-            //System.out.println("Error on insert values");
         }
     }
 
     static void registerCondutor(Condutor cond){
 
+        final String SELECT_CMD = 
+                "SELECT idpessoa FROM proprietario where idpessoa = ?";
+
         final String INSERT_CMD_CONDUTOR = 
                 "INSERT INTO condutor values(?,?,?)"; // (noident,NIF,nproprio,apelido,morada,
                 //codpostal,localidade,ncconducao,dtnascimento)
 
+        final String UPDATE_CMD = 
+                "update pessoa set atrdisc = C where id = ?";
+
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
-            PreparedStatement pstmt = con.prepareStatement(INSERT_CMD_CONDUTOR);
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+            PreparedStatement pstmt2 = con.prepareStatement(INSERT_CMD_CONDUTOR);
+            PreparedStatement pstmt3 = con.prepareStatement(UPDATE_CMD);
         ) {
 
             con.setAutoCommit(false);
+
+            pstmt1.setInt(1,cond.getIdPessoa());
+            ResultSet rs = pstmt1.executeQuery();
+            while(rs.next()){
+                 if(rs.getInt("idpessoa") == cond.getIdPessoa()) throw new SQLException("I am already a Proprietario! So you can't register me as a Condutor.");
+            }
             
-            pstmt.setInt(1,cond.getIdPessoa());
-            pstmt.setString(2,cond.getNConducao());
-            pstmt.setObject(3,cond.getDtNascimento());
+            pstmt2.setInt(1,cond.getIdPessoa());
+            pstmt2.setString(2,cond.getNConducao());
+            pstmt2.setObject(3,cond.getDtNascimento());
             
-            pstmt.executeUpdate();
+            pstmt2.executeUpdate();
+
+            pstmt3.setInt(1,cond.getIdPessoa());
+
+            pstmt3.executeUpdate();
+
             con.commit();
             con.setAutoCommit(true);
             System.out.println("Condutor registered!!!");
@@ -131,6 +158,53 @@ class Model {
             System.out.println("Veiculo registered!!!");
 
         }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    static void removeAndUpdateVeiculo(Veiculo veiculo,int prop_id){
+
+        final String SELECT_CMD =
+            "SELECT min(id) from veiculo where proprietario = ?"; // buscar o id do veiculo mais antigo
+
+        final String DELETE_CMD = 
+            "DELETE from veiculo where id = ?";
+
+        final String INSERT_CMD = String.format(
+            "INSERT INTO veiculo values(?,?,?,?,?,?,%d)",prop_id); // id,matricula,tipo,modelo,marca,ano,proprietario
+
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+            PreparedStatement pstmt2 = con.prepareStatement(DELETE_CMD);
+            PreparedStatement pstmt3 = con.prepareStatement(INSERT_CMD);
+        ){
+
+            con.setAutoCommit(false);
+
+            int RemovedVeiculoId = -1;
+
+            pstmt1.setInt(1,prop_id);
+            ResultSet rs = pstmt1.executeQuery();
+            while(rs.next()){
+               RemovedVeiculoId = rs.getInt("min");
+            }
+
+            pstmt2.setInt(1,RemovedVeiculoId);
+            pstmt2.executeUpdate();
+
+            pstmt3.setInt(1,veiculo.getId());
+            pstmt3.setString(2,veiculo.getMatricula());
+            pstmt3.setInt(3,veiculo.getTipo());
+            pstmt3.setString(4,veiculo.getModelo());
+            pstmt3.setString(5,veiculo.getMarca());
+            pstmt3.setInt(6,veiculo.getAno());
+            pstmt3.executeUpdate();
+
+            con.commit();
+            con.setAutoCommit(true);
+            System.out.println("Veiculo registered!!!");
+        }catch(SQLException e){
             System.out.println(e.getMessage());
         }
     }
@@ -328,7 +402,7 @@ class Model {
     static void showValidPessoa() {
 
         final String SELECT_CMD = String.format(
-            "(select id,nproprio , apelido from pessoa where atrdisc = 'CL') except (SELECT id, nproprio, apelido FROM pessoa p, condutor c, proprietario p2 where p.id = c.idpessoa or p2.idpessoa = p.id)");
+            "SELECT id, nproprio, apelido from pessoa where atrdisc = 'CL'");
 
         try (
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());

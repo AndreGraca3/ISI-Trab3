@@ -191,6 +191,7 @@ class App{
             char answer = s.next().charAt(0);
             try{
                 if(answer == 'Y' || answer == 'y'){
+                    clearConsole();
                     registerProprietario();
                 }
             }catch(Exception e) {
@@ -216,9 +217,9 @@ class App{
 
             Proprietario proprietario = new Proprietario(proprietarioValues);
 
-            Model.registerProprietario(proprietario);
+            
+            Model.registerProprietario(proprietario); // verifico que não estou a fazer nada de errado.
         }
-
     }
 
     private void registerCliente() {
@@ -254,26 +255,29 @@ class App{
             } 
         }   
 
-        int owner_id = Integer.parseInt(splitedValues[5]);
+        if(splitedValues.length == 6){
+            int owner_id = Integer.parseInt(splitedValues[5]);
+            int nextId = Model.getNextId("veiculo"); 
+            String veiculoValues = nextId + "," + values;
+            Veiculo veiculo = new Veiculo(veiculoValues);   
 
-        try{                        //owner
-            if(Model.owns20vehicles(owner_id) == true){
-                System.out.println("You are trying to add a new vehicle to a owner wich already owns 20 vehicles");
-                System.out.println("Adding this new vehicle will remove the older vehicle owned by this owner!");
-                System.out.println("Do you want to add this new vehicle?(Y/N)");
-                Scanner s = new Scanner(System.in);
-                char answer = s.next().charAt(0); 
-                if(answer == 'Y' || answer == 'Y'){
-                    int nextId = Model.getNextId("veiculo");       
-
-                    String veiculoValues = nextId + "," + values;
-
-                    Veiculo veiculo = new Veiculo(veiculoValues);
+            try{                        //owner
+                if(Model.owns20vehicles(owner_id) == true){
+                    System.out.println("You are trying to add a new vehicle to a owner wich already owns 20 vehicles");
+                    System.out.println("Adding this new vehicle will remove the older vehicle owned by this owner!");
+                    System.out.println("(The first ever vehicle register for this owner.)");
+                    System.out.println("Do you want to add this new vehicle?(Y/N)");
+                    Scanner s = new Scanner(System.in);
+                    char answer = s.next().charAt(0); 
+                    if(answer == 'Y' || answer == 'Y'){    
+                        Model.removeAndUpdateVeiculo(veiculo,owner_id);
+                    }
+                }else{
                     Model.registerVeiculo(veiculo);
                 }
-            }
-        } catch(Exception e){
+            } catch(Exception e){
             //nothing to do;
+            }
         }
     }
 
