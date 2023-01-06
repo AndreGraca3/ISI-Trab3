@@ -259,6 +259,13 @@ class Model {
         printResult(SELECT_CMD);
     }
 
+    static void getMostProfitableDriver(String year){
+        final String SELECT_CMD = 
+        String.format("select (nproprio || ' ' || apelido) as nome, noident, morada, sum(v.valfim) as CustoFinalAcumulado from pessoa p1 inner join condutor c on p1.id = c.idpessoa inner join viagem v on v.condutor = c.idpessoa where extract(year from v.dtviagem) = '%s' group by p1.id order by CustoFinalAcumulado desc limit 1;", year);
+  
+        printResult(SELECT_CMD);
+    }
+
     static String inputData(String str){
         java.util.Scanner key = new Scanner(System.in);
         System.out.println("Enter corresponding values, separated by commas, \n" + str); 
@@ -584,4 +591,15 @@ class Model {
         return b;
     }
 
+    static void custoTotalVeiculo(int idveiculo){
+        final String SELECT_CMD = String.format(
+            "select sum(v.valfim) as custoTotalVeiculo from viagem v where veiculo = %d",idveiculo);
+            printResult(SELECT_CMD);
+    }
+
+    static void nTotalViagens(int idveiculo){
+        final String SELECT_CMD = String.format(
+            "select count(v.veiculo) as nTotalViagens from viagem v where veiculo = %d",idveiculo);
+            printResult(SELECT_CMD);
+    }
 }

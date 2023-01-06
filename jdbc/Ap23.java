@@ -19,7 +19,10 @@ class App{
         registerVeiculo, // 5
         listClientsWithMostTrips, // 6
         listDriversWithNoTrips, // 7
-        countOwnerCarsTrips // 8
+        countOwnerCarsTrips, // 8
+        getMostProfitableDriver, // 9
+        custoTotalVeiculo,
+        nTotalViagens
     }
 
     private static App __instance = null;
@@ -36,6 +39,9 @@ class App{
         __dbMethods.put(Option.listClientsWithMostTrips, new DbWorker() {public void doWork() {App.this.listClientsWithMostTrips();}});
         __dbMethods.put(Option.listDriversWithNoTrips, new DbWorker() {public void doWork() {App.this.listDriversWithNoTrips();}});
         __dbMethods.put(Option.countOwnerCarsTrips, new DbWorker() {public void doWork() {App.this.countOwnerCarsTrips();}});
+        __dbMethods.put(Option.getMostProfitableDriver, new DbWorker() {public void doWork() {App.this.getMostProfitableDriver();}});
+        __dbMethods.put(Option.custoTotalVeiculo, new DbWorker() {public void doWork() {App.this.custoTotalVeiculo();}});
+        __dbMethods.put(Option.nTotalViagens, new DbWorker() {public void doWork() {App.this.nTotalViagens();}});
     }
 
     public static App getInstance()
@@ -60,8 +66,11 @@ class App{
             System.out.println("4. Register Cliente");
             System.out.println("5. Register veiculo");
             System.out.println("6. List clients with most trips in a Year");
-            System.out.println("7. List Drivers with no trips");
-            System.out.println("8. Count Cars Trips for a Specific Owner");
+            System.out.println("7. List drivers with no trips");
+            System.out.println("8. Count cars trips for a specific owner");
+            System.out.println("9. Get most profitable driver");
+            System.out.println("10. get total cost of a vehicle");
+            System.out.println("11. get total number of trips of a vehicle");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -228,11 +237,31 @@ class App{
     private void registerCliente() {
 
         String values = Model.inputData("Identification number, NIF, first name, last name, address, phone number, region");
-        
-        String clienteValues = Model.getNextId("id","pessoa") + "," + values + "," + "CL";
 
-        Pessoa cliente = new Pessoa(clienteValues);
-        Model.registerPessoa(cliente);
+        String[] splitedValues = values.split(",");
+
+        if(splitedValues.length != 7){
+            System.out.println("Not a valid amout of values introduced! introduced: " + splitedValues.length);
+            System.out.println("Expected 7(new).");
+            System.out.println("Want to try again?(Y/N)");
+            Scanner s = new Scanner(System.in);
+            char answer = s.next().charAt(0);
+            try{
+                if(answer == 'Y' || answer == 'y'){
+                    clearConsole();
+                    registerCliente();
+                }
+            }catch(Exception e) {
+                    //nothing to do;
+            } 
+        }
+
+        if(splitedValues.length == 7){
+            String clienteValues = Model.getNextId("id","pessoa") + "," + values + "," + "CL";
+
+            Pessoa cliente = new Pessoa(clienteValues);
+            Model.registerPessoa(cliente);
+        }
     }
 
     private void registerVeiculo() {
@@ -296,7 +325,7 @@ class App{
     }
 
     private void listClientsWithMostTrips() {
-        String year = Model.inputData("Select the year");
+        String year = Model.inputData("Year");
         Model.listClientsWithMostTrips(year); 
     }
 
@@ -308,6 +337,23 @@ class App{
         String values = Model.inputData("Name/NIF, Year");
         String[] splitedValues = values.split(",");
         Model.countOwnerCarsTrips(splitedValues[0], Integer.parseInt(splitedValues[1]));
+    }
+
+    private void getMostProfitableDriver() {
+        String year = Model.inputData("Year");
+        Model.getMostProfitableDriver(year);
+    }
+
+    private void custoTotalVeiculo() {
+        Model.printResult("SELECT id,matricula,modelo, marca from veiculo");
+        String idveiculo = Model.inputData("Vehicle's id");
+        Model.custoTotalVeiculo(Integer.parseInt(idveiculo));
+    }
+
+    private void nTotalViagens(){
+        Model.printResult("SELECT id,matricula,modelo, marca from veiculo");
+        String idveiculo = Model.inputData("Vehicle's id");
+        Model.custoTotalVeiculo(Integer.parseInt(idveiculo));
     }
 
 }
