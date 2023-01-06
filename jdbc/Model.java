@@ -355,6 +355,49 @@ class Model {
         }
     }
 
+    static void getMostProfitableDriver(String year){
+        String SELECT_CMD
+            = String.format("select (nproprio || ' ' || apelido) as nome, noident, morada, sum(v.valfim) as CustoFinalAcumulado from pessoa p1 inner join condutor c on p1.id = c.idpessoa inner join viagem v on v.condutor = c.idpessoa where extract(year from v.dtviagem) = '%s' group by p1.id order by CustoFinalAcumulado desc limit 1;", year);
+  
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+        ) {
+            
+            con.setAutoCommit(false);
+            ResultSet rs = pstmt1.executeQuery();
+
+             System.out.print("Nome                 ");
+             System.out.print("NoIdent                 ");
+             System.out.println("Morada              ");
+
+            while (rs.next()){
+                System.out.print(rs.getString("nome"));
+                int nome_length = (rs.getString("nome")).length();
+                for(int steps = nome_length ; steps < 25 ; steps++){
+                    System.out.print(" ");
+                }
+
+                System.out.print(rs.getInt("noident"));
+                int noident_length = Integer.toString(rs.getInt("noident")).length();
+                for(int steps = noident_length ; steps < 20 ; steps++){
+                    System.out.print(" ");
+                }
+
+                System.out.print(rs.getString("morada"));
+                int morada_length = rs.getString("morada").length();
+                for(int steps = morada_length ; steps < 20 ; steps++){
+                    System.out.print(" ");
+                }
+            }
+            con.commit();
+            con.setAutoCommit(true);
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
     static String inputData(String str){
         java.util.Scanner key = new Scanner(System.in);
         System.out.println("Enter corresponding values, separated by commas, \n" + str); 

@@ -20,7 +20,8 @@ class App{
         listClientsWithMostTrips, // 6
         listDriversWithNoTrips, // 7
         countOwnerCarsTrips, // 8
-        printResult // 9
+        getMostProfitableDriver, // 9
+        printResult // 10
     }
 
     private static App __instance = null;
@@ -37,6 +38,7 @@ class App{
         __dbMethods.put(Option.listClientsWithMostTrips, new DbWorker() {public void doWork() {App.this.listClientsWithMostTrips();}});
         __dbMethods.put(Option.listDriversWithNoTrips, new DbWorker() {public void doWork() {App.this.listDriversWithNoTrips();}});
         __dbMethods.put(Option.countOwnerCarsTrips, new DbWorker() {public void doWork() {App.this.countOwnerCarsTrips();}});
+        __dbMethods.put(Option.getMostProfitableDriver, new DbWorker() {public void doWork() {App.this.getMostProfitableDriver();}});
         __dbMethods.put(Option.printResult, new DbWorker() {public void doWork() {App.this.printResult();}});
     }
 
@@ -62,8 +64,9 @@ class App{
             System.out.println("4. Register Cliente");
             System.out.println("5. Register veiculo");
             System.out.println("6. List clients with most trips in a Year");
-            System.out.println("7. List Drivers with no trips");
-            System.out.println("8. Count Cars Trips for a Specific Owner");
+            System.out.println("7. List drivers with no trips");
+            System.out.println("8. Count cars trips for a specific owner");
+            System.out.println("9. Get most profitable driver");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -299,7 +302,7 @@ class App{
     }
 
     private void listClientsWithMostTrips() {
-        String year = Model.inputData("Select the year");
+        String year = Model.inputData("Year");
         Model.listClientsWithMostTrips(year); 
     }
 
@@ -311,6 +314,11 @@ class App{
         String values = Model.inputData("Name/NIF, Year");
         String[] splitedValues = values.split(",");
         Model.countOwnerCarsTrips(splitedValues[0], Integer.parseInt(splitedValues[1]));
+    }
+
+    private void getMostProfitableDriver() {
+        String year = Model.inputData("Year");
+        Model.getMostProfitableDriver(year);
     }
 
     private void printResult() {
