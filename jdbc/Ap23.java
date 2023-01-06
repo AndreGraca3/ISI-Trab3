@@ -54,7 +54,6 @@ class App{
         Option option = Option.Unknown;
 
         try{
-            Model.changeValidTypes();
             System.out.println("Company Management");
             System.out.println();
             System.out.println("1. Exit");
@@ -65,7 +64,6 @@ class App{
             System.out.println("6. List clients with most trips in a Year");
             System.out.println("7. List Drivers with no trips");
             System.out.println("8. Count Cars Trips for a Specific Owner");
-            System.out.println("9. Print a Table");
             System.out.print(">");
             Scanner s = new Scanner(System.in);
             int result = s.nextInt(); // o primeiro valor inteiro que encontrar
@@ -97,6 +95,9 @@ class App{
 
         Login(); // estabelecer a ligação
         Option userInput; // input do usuário
+
+        Model.changeValidTypes();
+        Model.deleteOnCascade();
 
         do{
             clearConsole();
@@ -131,7 +132,7 @@ class App{
 
         String[] splitedValues = values.split(",");
 
-        int id = Model.getNextId("pessoa");
+        int id = Model.getNextId("id","pessoa");
 
         String condutorValues;
         String pessoaValues;
@@ -182,7 +183,7 @@ class App{
 
         String[] splitedValues = values.split(",");
         
-        int id = Model.getNextId("pessoa");
+        int id = Model.getNextId("id","pessoa");
 
         String proprietarioValues;
         String pessoaValues;
@@ -231,20 +232,20 @@ class App{
         String values = Model.inputData("Identification number, NIF, first name, last name, address, phone number, region");
         System.out.println(values); // debug purposes.
 
-        String clienteValues = Model.getNextId("pessoa") + "," + values + "," + "CL";
+        String clienteValues = Model.getNextId("id","pessoa") + "," + values + "," + "CL";
 
         Pessoa cliente = new Pessoa(clienteValues);
         Model.registerPessoa(cliente);
     }
 
     private void registerVeiculo() {
-        Model.printResult("tipoveiculo");
+        Model.printResult("proprietario");
 
-        String values = Model.inputData("license plate, Number of seats, multiplier, designation, model, brand, year, owner");
+        String values = Model.inputData("license plate, Number of seats, multiplier, designation, model, brand, year, color, owner");
        
         String[] splitedValues = values.split(",");
 
-        if(splitedValues.length != 8){
+        if(splitedValues.length != 9){
             System.out.println("Not a valid amout of values introduced! introduced: " + splitedValues.length);
             System.out.println("Expected 6.");
             System.out.println("Want to try again?(Y/N)");
@@ -260,13 +261,23 @@ class App{
             } 
         }   
 
-        if(splitedValues.length == 8){
-            int owner_id = Integer.parseInt(splitedValues[5]);
-            int nextId = Model.getNextId("veiculo"); 
-            String veiculoValues = nextId + "," + values;
-            Veiculo veiculo = new Veiculo(veiculoValues);   
+        if(splitedValues.length == 9){
+            int owner_id = Integer.parseInt(splitedValues[8]);
+            int nextId = Model.getNextId("id","veiculo"); 
+            boolean licencePlatePatter = 
+                Model.verifyWithRegex("(?:\\d{2}[A-Z]{2}\\d{2})|(?:\\d{2}[A-Z]{2}\\d{2})",splitedValues[0]);
 
-            try{                        //owner
+            int type_id = Model.verifyType(Integer.parseInt(splitedValues[1]),Integer.parseInt(splitedValues[2]),splitedValues[3]);
+
+            String veiculoValues = nextId + "," + splitedValues[0] + "," + type_id + "," + splitedValues[4] + "," + splitedValues[5] + "," + splitedValues[6] + "," + splitedValues[8];
+            Veiculo veiculo = new Veiculo(veiculoValues);
+
+            String corValues = nextId + "," + splitedValues[7];
+            Cor_veiculo cor = new Cor_veiculo(corValues);
+
+            try{  
+                if(!licencePlatePatter) throw new Exception("Not a valid licence_plate.");
+                                      //owner
                 if(Model.owns20vehicles(owner_id) == true){
                     System.out.println("You are trying to add a new vehicle to a owner wich already owns 20 vehicles");
                     System.out.println("Adding this new vehicle will remove the older vehicle owned by this owner!");
@@ -280,8 +291,9 @@ class App{
                 }else{
                     Model.registerVeiculo(veiculo);
                 }
+                Model.registerCor(cor);
             } catch(Exception e){
-            //nothing to do;
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -305,6 +317,7 @@ class App{
         String table = Model.inputData("Select the table");
         Model.printResult(table);
     }
+
 }
 
 public class Ap23{
@@ -315,3 +328,7 @@ public class Ap23{
         App.getInstance().Run();
     }
 }
+
+
+
+//[A-z]{2}-[0-9]{7}

@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.sql.SQLException;
+import java.util.regex.*;
 
 class Model {
 
@@ -158,6 +159,28 @@ class Model {
             System.out.println("Veiculo registered!!!");
 
         }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    static void registerCor(Cor_veiculo cor){
+
+        final String INSERT_CMD =
+            "INSERT INTO cor values(?,?)";
+
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt = con.prepareStatement(INSERT_CMD);
+        ) {
+
+            con.setAutoCommit(false);
+
+            pstmt.setInt(1,cor.getVeiculo());
+            pstmt.setString(2,cor.getCor());
+
+            con.commit();
+            con.setAutoCommit(true);
+        } catch(SQLException e) {
             System.out.println(e.getMessage());
         }
     }
@@ -417,12 +440,12 @@ class Model {
     }
 
     //vai a tabela pessoa buscar o ultimo id.
-    static int getNextId(String table){
+    static int getNextId(String id, String table){
         
         final String SELECT_CMD = String.format( 
-                "SELECT MAX(id) FROM %s",table);
+                "SELECT MAX(%s) FROM %s",id,table);
 
-        int id = 0;
+        int next_id = 0;
 
         try(
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
@@ -432,7 +455,7 @@ class Model {
 
             ResultSet res = pstmt.executeQuery();
             if(res.next()){
-                id = res.getInt("max") + 1;
+                next_id = res.getInt("max") + 1;
             };
 
             con.commit();
@@ -442,7 +465,7 @@ class Model {
             e.getMessage();
             System.out.println("Error!!!");
         }
-        return id;
+        return next_id;
     }
 
     static void showValidPessoa() {
@@ -500,10 +523,162 @@ class Model {
 
             con.commit();
             con.setAutoCommit(true);
-        } catch( SQLException e){
+        } catch(SQLException e){
             System.out.println(e.getMessage());
         }
 
+    }
+
+    static int verifyType(int Number_of_seats,int multiplier, String designation){
+
+        final String UPDATE_CMD = 
+            "INSERT INTO tipoveiculo values(?,?,?,?)";
+        
+        final String SELECT_CMD = 
+            "SELECT tipo FROM tipoveiculo WHERE nlugares = ? and multiplicador = ? and designacao = ?";
+
+        int id = -1;
+
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
+            PreparedStatement pstmt2 = con.prepareStatement(UPDATE_CMD);
+        ){
+            con.setAutoCommit(false);
+
+            pstmt1.setInt(1,Number_of_seats);
+            pstmt1.setInt(2,multiplier);
+            pstmt1.setString(3,designation);
+
+            ResultSet rs = pstmt1.executeQuery();
+            while(rs.next()){
+                id = rs.getInt("tipo");
+            }
+
+            if(id == -1){ // we add as a new type of vehicle.
+                id = getNextId("tipo","tipoveiculo");
+                pstmt2.setInt(1,id);
+                pstmt2.setInt(2,Number_of_seats);
+                pstmt2.setInt(3,multiplier);
+                pstmt2.setString(4,designation);
+                pstmt2.executeUpdate();
+            }
+
+            con.commit();
+            con.setAutoCommit(true);
+        } catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return id;
+    }
+
+
+    static void deleteOnCascade() {
+
+        final String DROP_CLIENTE_VIAGEM = 
+            "alter table clienteviagem drop constraint clienteviagem_viagem_fkey";
+
+        final String ALTER_CLIENTE_VIAGEM =
+            "alter table clienteviagem add constraint clienteviagem_viagem_fkey foreign key (viagem) references viagem(idsistema) on delete cascade";
+
+        final String DROP_VIAGEM = 
+            "alter table viagem drop constraint viagem_veiculo_condutor_dtinicio_fkey";
+
+        final String ALTER_VIAGEM =
+            "alter table viagem add constraint viagem_veiculo_condutor_dtinicio_fkey foreign key (veiculo,condutor,dtinicio) references PERIODOATIVO(veiculo,condutor,dtinicio) on delete cascade";
+
+        final String DROP_PERIODO_ATIVO = 
+            "alter table periodoativo drop constraint periodoativo_veiculo_fkey";
+
+        final String ALTER_PERIODO_ATIVO =
+            "alter table periodoativo add constraint periodoativo_veiculo_fkey foreign key (veiculo) references VEICULO(id) on delete cascade";
+
+        final String DROP_VEICULO = 
+            "alter table veiculo drop constraint veiculo_tipo_fkey";
+
+        final String ALTER_VEICULO = 
+            "alter table veiculo add constraint veiculo_tipo_fkey foreign key (tipo) references TIPOVEICULO(tipo) on delete cascade";
+
+        final String DROP_COR = 
+            "alter table corveiculo drop constraint corveiculo_veiculo_fkey";
+
+        final String ALTER_COR = 
+            "alter table corveiculo add constraint corveiculo_veiculo_fkey foreign key (veiculo) references VEICULO(id) on delete cascade";
+
+        final String DROP_CONDHABILITADO = 
+            "alter table condhabilitado drop constraint condhabilitado_veiculo_fkey";
+
+        final String ALTER_CONDHABILITADO = 
+            "alter table condhabilitado add constraint condhabilitado_veiculo_fkey foreign key (veiculo) references VEICULO(id) on delete cascade";
+
+        try(
+            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
+            Statement stmt1 = con.createStatement();
+            Statement stmt2 = con.createStatement();
+            Statement stmt3 = con.createStatement();
+            Statement stmt4 = con.createStatement();
+            Statement stmt5 = con.createStatement();
+            Statement stmt6 = con.createStatement();
+            Statement stmt7 = con.createStatement();
+            Statement stmt8 = con.createStatement();
+            Statement stmt9 = con.createStatement();
+            Statement stmt10 = con.createStatement();
+            Statement stmt11 = con.createStatement();
+            Statement stmt12 = con.createStatement();
+        ) {
+
+            con.setAutoCommit(false);
+
+            stmt1.executeUpdate(DROP_PERIODO_ATIVO);
+            stmt1.close();
+
+            stmt2.executeUpdate(ALTER_PERIODO_ATIVO);
+            stmt2.close();
+
+            stmt3.executeUpdate(DROP_VEICULO);
+            stmt3.close();
+
+            stmt4.execute(ALTER_VEICULO);
+            stmt4.close();
+
+            stmt5.execute(DROP_COR);
+            stmt5.close();
+
+            stmt6.execute(ALTER_COR);
+            stmt6.close();
+
+            stmt7.execute(DROP_CONDHABILITADO);
+            stmt7.close();
+
+            stmt8.execute(ALTER_CONDHABILITADO);
+            stmt8.close();
+
+            stmt9.execute(DROP_VIAGEM);
+            stmt9.close();
+
+            stmt10.execute(ALTER_VIAGEM);
+            stmt10.close();
+
+            stmt11.execute(DROP_CLIENTE_VIAGEM);
+            stmt11.close();
+            
+            stmt12.execute(ALTER_CLIENTE_VIAGEM);
+            stmt12.close();
+
+            con.commit();
+            con.setAutoCommit(true);
+
+        } catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    static boolean verifyWithRegex(String regex,String value ){
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(value);
+        boolean b = m.matches();
+    
+        return b;
     }
 
 }

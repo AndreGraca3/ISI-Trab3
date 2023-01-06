@@ -1,8 +1,8 @@
-class cor_veiculo {
+class Cor_veiculo {
     private int veiculo;
     private String cor;
 
-    cor_veiculo(String values){
+    Cor_veiculo(String values){
         String[] attributos = values.split(","); // (2,"vermelho")
         veiculo = Integer.parseInt(attributos[0]); // converter o valor a inteiro.
         cor = attributos[1];
