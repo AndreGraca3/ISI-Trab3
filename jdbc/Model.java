@@ -92,8 +92,7 @@ class Model {
                 "SELECT idpessoa FROM proprietario where idpessoa = ?";
 
         final String INSERT_CMD_CONDUTOR = 
-                "INSERT INTO condutor values(?,?,?)"; // (noident,NIF,nproprio,apelido,morada,
-                //codpostal,localidade,ncconducao,dtnascimento)
+                "INSERT INTO condutor values(?,?,?)";
 
         final String UPDATE_CMD = 
                 "update pessoa set atrdisc = C where id = ?";
@@ -129,7 +128,6 @@ class Model {
 
         }catch (SQLException e) {
             System.out.println(e.getMessage());
-            //System.out.println("Error on insert values");
         }
     }
 
@@ -236,123 +234,29 @@ class Model {
         final String SELECT_CMD =
             String.format("select nome_cliente, max(N_viagens) as Mais_viagens from(select id,(nproprio || ' ' || apelido) as nome_cliente,nif, count(c.idpessoa) as N_viagens from clienteviagem c inner join viagem v on viagem = idSistema inner join pessoa p on id = idpessoa where extract(year from v.dtviagem) = %s group by p.id) as A group by nome_cliente", year);
 
-        try(
-            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
-            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
-        ) {
-            
-            con.setAutoCommit(false);
-            ResultSet rs = pstmt1.executeQuery();
-            
-            System.out.print("Nome              ");
-            System.out.println("Viagens");
-
-            while (rs.next()){
-                System.out.print(rs.getString("nome_cliente"));
-
-                int nome_cliente_length = (rs.getString("nome_cliente")).length();
-                for(int steps = nome_cliente_length ; steps < 20 ; steps++){
-                    System.out.print(" ");
-                }
-
-                System.out.println(rs.getInt("Mais_viagens"));
-            }
-           
-            con.commit();
-            con.setAutoCommit(true);
-
-        }catch (SQLException e){
-            System.out.println(e.getMessage());
-        }
+        printResult(SELECT_CMD);
     }
 
     static void listDriversWithNoTrips(){
         final String SELECT_CMD =
             "select id,(nproprio || ' ' || apelido) as nome_condutor,nif from pessoa p1 inner join condutor C on id = idpessoa left outer join periodoativo p2 on idpessoa = condutor where condutor isnull;";
 
-        try(
-            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
-            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
-        ) {
-            
-            con.setAutoCommit(false);
-            ResultSet rs = pstmt1.executeQuery();
-            
-            System.out.print("Nome                 ");
-            System.out.println("NIF");
-
-            while (rs.next()){
-                System.out.print(rs.getString("nome_condutor"));
-
-                int nome_condutor_length = (rs.getString("nome_condutor")).length();
-                for(int steps = nome_condutor_length ; steps < 20 ; steps++){
-                    System.out.print(" ");
-                }
-
-                System.out.println(rs.getInt("nif"));
-            }
-            con.commit();
-            con.setAutoCommit(true);
-
-        }catch (SQLException e){
-            System.out.println(e.getMessage());
-        }
+        printResult(SELECT_CMD);
     }
 
     static void countOwnerCarsTrips(String info, int year){
         String SELECT_CMD;
+        String[] arr = info.split(" ");
         try {
             Integer.parseInt(info);
             SELECT_CMD =
             String.format("select p1.nproprio, p1.nif,extract(year from p3.dtinicio) as ano,count(v1.id) as N_viagens from pessoa p1 inner join proprietario p2 on p1.nif  = '%s' inner join veiculo v1 on v1.proprietario = p2.idpessoa inner join periodoativo p3 on p3.veiculo = v1.id and extract(year from p3.dtinicio) = '%d' group by p1.nproprio, p1.nif,extract(year from p3.dtinicio)",info,year);
         } catch(NumberFormatException e) {
             SELECT_CMD =
-            String.format("select p1.nproprio, p1.nif,extract(year from p3.dtinicio) as ano,count(v1.id) as N_viagens from pessoa p1 inner join proprietario p2 on p1.nproprio  = '%s' inner join veiculo v1 on v1.proprietario = p2.idpessoa inner join periodoativo p3 on p3.veiculo = v1.id and extract(year from p3.dtinicio) = '%d' group by p1.nproprio, p1.nif,extract(year from p3.dtinicio)",info,year);
-          
+            String.format("select p1.nproprio, p1.nif,extract(year from p3.dtinicio) as ano,count(v1.id) as N_viagens from pessoa p1 inner join proprietario p2 on p1.nproprio  = '%s' and p1.apelido = '%s' inner join veiculo v1 on v1.proprietario = p2.idpessoa inner join periodoativo p3 on p3.veiculo = v1.id and extract(year from p3.dtinicio) = '%d' group by p1.nproprio, p1.nif,extract(year from p3.dtinicio)",arr[0],arr[1],year);
         }
   
-        try(
-            Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
-            PreparedStatement pstmt1 = con.prepareStatement(SELECT_CMD);
-        ) {
-            
-            con.setAutoCommit(false);
-            ResultSet rs = pstmt1.executeQuery();
-
-             System.out.print("Nome                 ");
-             System.out.print("NIF                 ");
-             System.out.print("Ano              ");
-             System.out.println("Viagens");
-
-            while (rs.next()){
-                System.out.print(rs.getString("nproprio"));
-
-                int nproprio_length = (rs.getString("nproprio")).length();
-                for(int steps = nproprio_length ; steps < 20 ; steps++){
-                    System.out.print(" ");
-                }
-
-                System.out.print(rs.getInt("nif"));
-                int nif_length = Integer.toString(rs.getInt("nif")).length();
-                for(int steps = nif_length ; steps < 20 ; steps++){
-                    System.out.print(" ");
-                }
-
-                System.out.print(rs.getInt("ano"));
-                int ano_length = Integer.toString(rs.getInt("ano")).length();
-                for(int steps = ano_length ; steps < 20 ; steps++){
-                    System.out.print(" ");
-                }
-
-                System.out.println(rs.getInt("n_viagens"));
-                int viagens_length = Integer.toString(rs.getInt("n_viagens")).length();
-            }
-            con.commit();
-            con.setAutoCommit(true);
-
-        }catch (SQLException e){
-            System.out.println(e.getMessage());
-        }
+        printResult(SELECT_CMD);
     }
 
     static String inputData(String str){
@@ -362,8 +266,8 @@ class Model {
         return values;
     }
 
-    static void printResult(String table){
-        String SELECT_CMD = String.format("SELECT * FROM %s", table);
+    static void printResult(String Select_cmd){
+        String SELECT_CMD = String.format(Select_cmd);
         final int TAB_SIZE = 8;
         try(
             Connection con = DriverManager.getConnection(App.getInstance().getConnectionString());
@@ -571,7 +475,6 @@ class Model {
         }
         return id;
     }
-
 
     static void deleteOnCascade() {
 

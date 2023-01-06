@@ -19,8 +19,7 @@ class App{
         registerVeiculo, // 5
         listClientsWithMostTrips, // 6
         listDriversWithNoTrips, // 7
-        countOwnerCarsTrips, // 8
-        printResult // 9
+        countOwnerCarsTrips // 8
     }
 
     private static App __instance = null;
@@ -37,7 +36,6 @@ class App{
         __dbMethods.put(Option.listClientsWithMostTrips, new DbWorker() {public void doWork() {App.this.listClientsWithMostTrips();}});
         __dbMethods.put(Option.listDriversWithNoTrips, new DbWorker() {public void doWork() {App.this.listDriversWithNoTrips();}});
         __dbMethods.put(Option.countOwnerCarsTrips, new DbWorker() {public void doWork() {App.this.countOwnerCarsTrips();}});
-        __dbMethods.put(Option.printResult, new DbWorker() {public void doWork() {App.this.printResult();}});
     }
 
     public static App getInstance()
@@ -230,8 +228,7 @@ class App{
     private void registerCliente() {
 
         String values = Model.inputData("Identification number, NIF, first name, last name, address, phone number, region");
-        System.out.println(values); // debug purposes.
-
+        
         String clienteValues = Model.getNextId("id","pessoa") + "," + values + "," + "CL";
 
         Pessoa cliente = new Pessoa(clienteValues);
@@ -239,7 +236,7 @@ class App{
     }
 
     private void registerVeiculo() {
-        Model.printResult("proprietario");
+        Model.printResult("SELECT id, ( nproprio || ' ' || apelido) as nome, dtNascimento from proprietario p1 inner join pessoa p2 on p1.idpessoa = p2.id");
 
         String values = Model.inputData("license plate, Number of seats, multiplier, designation, model, brand, year, color, owner");
        
@@ -311,11 +308,6 @@ class App{
         String values = Model.inputData("Name/NIF, Year");
         String[] splitedValues = values.split(",");
         Model.countOwnerCarsTrips(splitedValues[0], Integer.parseInt(splitedValues[1]));
-    }
-
-    private void printResult() {
-        String table = Model.inputData("Select the table");
-        Model.printResult(table);
     }
 
 }

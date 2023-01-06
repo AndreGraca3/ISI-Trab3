@@ -1,3 +1,5 @@
+package jdbc;
+
 class Cor_veiculo {
     private int veiculo;
     private String cor;
